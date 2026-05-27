@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лабораторна робота №6 — UML діаграми</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --primary: #0f3460;
+      --primary-light: #1a5276;
+      --accent: #2196f3;
+      --accent-glow: rgba(33,150,243,.12);
+      --text: #2c3e50;
+      --text-dim: #7f8c8d;
+      --border: #e0e4e8;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,.06);
+      --shadow-hover: 0 4px 20px rgba(0,0,0,.1);
+      --transition: .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      background: linear-gradient(135deg, #0f3460 0%, #1a5276 40%, #2196f3 100%);
+      color: #fff;
+      padding: 50px 20px 40px;
+      text-align: center;
+      position: relative;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0; right: 0;
+      height: 40px;
+      background: var(--bg);
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    }
+    .hero h1 { font-size: 2.2em; font-weight: 700; margin-bottom: 8px; letter-spacing: -.5px; }
+    .hero p { font-size: 1.05em; opacity: .85; max-width: 650px; margin: 0 auto; }
+
+    /* ─── TOC ─── */
+    .toc { max-width: 960px; margin: 30px auto 10px; padding: 0 20px; }
+    .toc-inner {
+      background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 20px 28px; display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .toc-inner a {
+      text-decoration: none; color: var(--primary); font-size: .88em; font-weight: 500;
+      padding: 6px 14px; border-radius: 20px; background: #eef3f9; transition: var(--transition); white-space: nowrap;
+    }
+    .toc-inner a:hover { background: var(--accent); color: #fff; transform: translateY(-1px); }
+
+    /* ─── CONTAINER ─── */
+    .container { max-width: 960px; margin: 0 auto; padding: 20px 20px 60px; }
+
+    /* ─── SECTION (collapsible) ─── */
+    .section { margin-bottom: 24px; }
+    .section-header {
+      background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+      cursor: pointer; user-select: none; transition: var(--transition); overflow: hidden;
+    }
+    .section-header:hover { box-shadow: var(--shadow-hover); }
+    .section-trigger {
+      display: flex; align-items: center; gap: 14px; padding: 18px 24px;
+      width: 100%; border: none; background: none; cursor: pointer;
+      text-align: left; font: inherit; color: inherit;
+    }
+    .section-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .section-icon {
+      font-size: 1.5em; flex-shrink: 0; width: 42px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--accent-glow); border-radius: 10px;
+    }
+    .section-title { flex: 1; font-size: 1.2em; font-weight: 600; color: var(--primary); }
+    .section-badge {
+      font-size: .75em; padding: 3px 10px; border-radius: 12px;
+      background: #eef3f9; color: var(--accent); font-weight: 600;
+    }
+    .chevron {
+      width: 20px; height: 20px; transition: transform var(--transition);
+      color: var(--text-dim); flex-shrink: 0;
+    }
+    .section.open .chevron { transform: rotate(180deg); }
+
+    /* ─── COLLAPSIBLE BODY ─── */
+    .section-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height .5s cubic-bezier(.4,0,.2,1), opacity .3s ease;
+      opacity: 0;
+    }
+    .section.open .section-body { max-height: 8000px; opacity: 1; }
+    .section-inner { padding: 0 24px 24px; }
+
+    /* ─── DIAGRAM CARD ─── */
+    .diagram-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      margin: 16px 0; overflow: hidden; transition: var(--transition);
+    }
+    .diagram-card:hover { box-shadow: var(--shadow-hover); }
+    .diagram-label {
+      padding: 12px 20px; font-weight: 600; font-size: .95em; color: var(--primary);
+      background: #f8fafc; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .diagram-label .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .diagram-body { padding: 24px; overflow-x: auto; }
+    .mermaid { display: flex; justify-content: center; }
+
+    /* ─── INFO BOX ─── */
+    .info-box {
+      background: linear-gradient(135deg, #eef3f9, #f5f8fc);
+      border-left: 4px solid var(--accent);
+      padding: 16px 20px; margin: 16px 0;
+      border-radius: 0 var(--radius) var(--radius) 0; font-size: .93em;
+    }
+    .info-box strong { color: var(--primary); }
+
+    /* ─── TABLE ─── */
+    .table-wrap {
+      overflow-x: auto; margin: 16px 0; border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+    table { width: 100%; border-collapse: collapse; background: var(--card); font-size: .9em; }
+    th {
+      background: var(--primary); color: #fff; font-weight: 600; padding: 12px 16px;
+      text-align: left; position: sticky; top: 0; white-space: nowrap;
+    }
+    td { padding: 10px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background var(--transition); }
+    tbody tr:hover { background: #f0f6ff; }
+    td:first-child { font-weight: 600; color: var(--accent); white-space: nowrap; }
+
+    .scenario-table td:first-child { width: 180px; color: var(--primary); background: #f8fafc; }
+    .scenario-table td:last-child { font-weight: 400; }
+
+    /* ─── SUB-HEADING ─── */
+    .sub-heading {
+      font-size: 1.05em; font-weight: 600; color: var(--primary-light);
+      margin: 28px 0 12px; padding-left: 12px; border-left: 3px solid var(--accent);
+    }
+
+    /* ─── TOOLBAR ─── */
+    .toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 16px; }
+    .btn {
+      padding: 7px 16px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--card); color: var(--text); font-size: .82em;
+      cursor: pointer; transition: var(--transition); font-weight: 500;
+    }
+    .btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ─── BACK TO TOP ─── */
+    .back-top {
+      position: fixed; bottom: 30px; right: 30px; width: 44px; height: 44px;
+      border-radius: 50%; background: var(--primary); color: #fff; border: none;
+      cursor: pointer; box-shadow: 0 3px 12px rgba(0,0,0,.2);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transform: translateY(20px); transition: var(--transition); z-index: 100;
+    }
+    .back-top.visible { opacity: 1; transform: translateY(0); }
+    .back-top:hover { background: var(--accent); }
+
+    @media (max-width: 640px) {
+      .hero { padding: 36px 16px 30px; }
+      .hero h1 { font-size: 1.6em; }
+      .toc-inner { padding: 14px 16px; }
+      .section-trigger { padding: 14px 16px; }
+      .section-inner { padding: 0 16px 16px; }
+      .diagram-body { padding: 16px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ HERO ═══════════ -->
+<header class="hero">
+  <h1>Лабораторна робота №6</h1>
+  <p>Опис діалогу з використанням UML — діаграми варіантів використання та діаграми діяльності</p>
+</header>
+
+<!-- ═══════════ TOC ═══════════ -->
+<nav class="toc">
+  <div class="toc-inner">
+    <a href="#sec-usecase">Use Case діаграма</a>
+    <a href="#sec-uc-table">Опис варіантів</a>
+    <a href="#sec-activity">Діаграми діяльності</a>
+    <a href="#sec-scenarios">Сценарії (Коберн)</a>
+  </div>
+</nav>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="container">
+
+  <div class="toolbar">
+    <button class="btn" onclick="toggleAll(true)">▼ Розгорнути все</button>
+    <button class="btn" onclick="toggleAll(false)">▲ Згорнути все</button>
+  </div>
+
+  <!-- 1. USE CASE DIAGRAM -->
+  <div class="section open" id="sec-usecase">
+    <div class="section-header" onclick="toggle(this)">
+      <button class="section-trigger" aria-expanded="true">
+        <span class="section-icon">📊</span>
+        <span class="section-title">1. Діаграма варіантів використання (Use Case)</span>
+        <span class="section-badge">1 діаграма</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+    <div class="section-body">
+      <div class="section-inner">
+        <div class="info-box">
+          <strong>Система:</strong> «База студентів» — веб-додаток для управління групами, студентами та їхніми оцінками.<br>
+          <strong>Дійові особи:</strong> Адміністратор (основна дійова особа).
+        </div>
+        <div class="diagram-card">
+          <div class="diagram-label"><span class="dot"></span>Use Case — «База студентів»</div>
+          <div class="diagram-body">
+            <pre class="mermaid">
+flowchart LR
+  Admin(("👤 Адміністратор"))
+
+  subgraph system ["🎓 База студентів"]
+    UC1["Переглянути список груп"]
+    UC2["Додати групу"]
+    UC3["Переглянути список студентів"]
+    UC4["Знайти студента"]
+    UC5["Додати студента"]
+    UC6["Відрахувати студента"]
+    UC7["Переглянути оцінки"]
+    UC8["Додати оцінку"]
+
+    UC3 -.->|"«extend»"| UC4
+    UC5 -.->|"«include»"| UC1
+    UC8 -.->|"«include»"| UC3
+    UC6 -.->|"«include»"| UC3
+  end
+
+  Admin --> UC1
+  Admin --> UC2
+  Admin --> UC3
+  Admin --> UC4
+  Admin --> UC5
+  Admin --> UC6
+  Admin --> UC7
+  Admin --> UC8
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. USE CASE TABLE -->
+  <div class="section open" id="sec-uc-table">
+    <div class="section-header" onclick="toggle(this)">
+      <button class="section-trigger" aria-expanded="true">
+        <span class="section-icon">📋</span>
+        <span class="section-title">2. Опис варіантів використання</span>
+        <span class="section-badge">8 use cases</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+    <div class="section-body">
+      <div class="section-inner">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>№</th><th>Назва</th><th>Опис</th><th>Дійова особа</th><th>Передумова</th><th>Результат</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>UC1</td><td>Переглянути список груп</td><td>Перегляд переліку навчальних груп</td><td>Адміністратор</td><td>—</td><td>Таблиця груп відображена</td></tr>
+              <tr><td>UC2</td><td>Додати групу</td><td>Введення назви, факультету, року — створення групи</td><td>Адміністратор</td><td>—</td><td>Група збережена в БД</td></tr>
+              <tr><td>UC3</td><td>Переглянути студентів</td><td>Перегляд активних (невідрахованих) студентів</td><td>Адміністратор</td><td>—</td><td>Таблиця студентів відображена</td></tr>
+              <tr><td>UC4</td><td>Знайти студента</td><td>Пошуковий запит для фільтрації студентів</td><td>Адміністратор</td><td>Відкрита сторінка студентів</td><td>Список відфільтровано</td></tr>
+              <tr><td>UC5</td><td>Додати студента</td><td>Введення ПІБ, email, вибір групи</td><td>Адміністратор</td><td>Існує ≥ 1 група</td><td>Студент збережений у БД</td></tr>
+              <tr><td>UC6</td><td>Відрахувати студента</td><td>Позначення студента як відрахованого</td><td>Адміністратор</td><td>Студент не відрахований</td><td>expelled = true</td></tr>
+              <tr><td>UC7</td><td>Переглянути оцінки</td><td>Перегляд оцінок (з фільтрацією по студенту)</td><td>Адміністратор</td><td>—</td><td>Таблиця оцінок відображена</td></tr>
+              <tr><td>UC8</td><td>Додати оцінку</td><td>Вибір студента, введення предмета та оцінки</td><td>Адміністратор</td><td>Існує ≥ 1 студент</td><td>Оцінку збережено в БД</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ACTIVITY DIAGRAMS -->
+  <div class="section" id="sec-activity">
+    <div class="section-header" onclick="toggle(this)">
+      <button class="section-trigger" aria-expanded="false">
+        <span class="section-icon">⚙️</span>
+        <span class="section-title">3. Діаграми діяльності (Activity)</span>
+        <span class="section-badge">8 діаграм</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+    <div class="section-body">
+      <div class="section-inner">
+
+        <div class="sub-heading">3.1 Переглянути список груп (UC1)</div>
+        <div class="diagram-card">
+          <div class="diagram-label"><span class="dot"></span>Activity — UC1</div>
+          <div class="diagram-body">
+            <pre class="mermaid">
+flowchart TD
+  A(("●")) --> B["Відкрити сторінку Групи"]
+  B --> C["GET /api/groups"]
+  C --> D["Отримати список груп з БД"]
+  D --> E{"Список порожній?"}
+  E -- Так --> F["Повідомлення: груп немає"]
+  E -- Ні --> G["Відобразити таблицю груп"]
+  F --> H(("◉"))
+  G --> H
+            </pre>
+          </div>
+        </div>
+
+        <div class="sub-heading">3.2 Додати групу (UC2)</div>
+        <div class="diagram-card">
+          <div class="diagram-label"><span class="dot"></span>Activity — UC2</div>
+          <div class="diagram-body">
+            <pre class="mermaid">
+flowchart TD
+  A(("●")) --> B["Відкрити форму додавання"]
+  B --> C["Ввести назву, факультет, рік"]
+  C --> D{"Поля заповнені?"}
+  D -- Ні --> E["Помилка валідації"]
+  E --> C
+  D -- Так --> F["POST /api/groups"]
+  F --> G["Генерація ID"]
+  G --> H["Збереження в БД"]
+  H --> I["Оновити список"]
+  I --> J(("◉"))
+            </pre>
+          </div>
+        </div>
+
+        <div class="sub-heading">3.3 Переглянути список студентів (UC3)</div>
+        <div class="diagram-card">
+          <div class="diagram-label"><span class="dot"></span>Activity — UC3</div>
+          <div class="diagram-body">
+            <pre class="mermaid">
+flowchart TD
+  A(("●")) --> B["Відкрити сторінку Студенти"]
+  B --> C["GET /api/students"]
+  C --> D["Отримати список з БД"]
+  D --> E["Фільтр: expelled = false"]
+  E --> F{"Список порожній?"}
+  F -- Так --> G["Повідомлення: студентів немає"]
+  F -- Ні --> H["Відобразити таблицю"]
+  G --> I(("◉"))
+  H --> I
+            </pre>
+          </div>
+        </div>
+
+        <div class="sub-heading">3.4 Знайти студента (UC4)</div>
+        <div class="diagram-card">
+          <div class="diagram-label"><span class="dot"></span>Activity — UC4</div>
+          <div class="diagram-body">
+            <pre class="mermaid">
+flowchart TD
+  A(("●")) --> B["Ввести запит у поле пошуку"]
+  B --> C["GET /api/students?q=..."]
+  C --> D["Отримати студентів з БД"]
+  D --> E["Фільтр: невідрахованих"]
+  E --> F["Фільтр за ім'ям / прізвищем"]
+  F --> G{"Результати є?"}
+  G -- Так --> H["Відобразити відфільтровану таблицю"]
+  G -- Ні --> I["Нічого не знайдено"]
+  H --> J(("◉"))
+  I --> J
+            </pre>
+          </div>
+        </div>
+
+        <div class="sub-heading">3.5 Додати студента (UC5)</div>
+        <div class="diagram-card">
+          <div class="diagram-label"><span class="dot"></span>Activity — UC5</div>
+          <div class="diagram-body">
+            <pre class="mermaid">
+flowchart TD
+  A(("●")) --> B["Відкрити форму"]
+  B --> C["GET /api/groups — завантажити групи"]
+  C --> D["Ввести ім'я, прізвище, email"]
+  D --> E["Обрати групу"]
+  E --> F{"Поля заповнені?"}
+  F -- Ні --> G["Помилка валідації"]
+  G --> D
+  F -- Так --> H["POST /api/students"]
+  H --> I["ID + expelled = false"]
+  I --> J["Збереження в БД"]
+  J --> K["Оновити список"]
+  K --> L(("◉"))
+            </pre>
+          </div>
+        </div>
+
+        <div class="sub-heading">3.6 Відрахувати студента (UC6)</div>
+        <div class="diagram-card">
+          <div class="diagram-label"><span class="dot"></span>Activity — UC6</div>
+          <div class="diagram-body">
+            <pre class="mermaid">
+flowchart TD
+  A(("●")) --> B["Обрати студента"]
+  B --> C["Натиснути Відрахувати"]
+  C --> D{"Підтвердити?"}
+  D -- Ні --> E["Скасування"]
+  E --> F(("◉"))
+  D -- Так --> G["PATCH /api/students/id/expel"]
+  G --> H{"Знайдено?"}
+  H -- Ні --> I["Помилка 404"]
+  I --> F
+  H -- Так --> J["expelled = true"]
+  J --> K["Збереження в БД"]
+  K --> L["Оновити список"]
+  L --> F
+            </pre>
+          </div>
+        </div>
+
+        <div class="sub-heading">3.7 Переглянути оцінки (UC7)</div>
+        <div class="diagram-card">
+          <div class="diagram-label"><span class="dot"></span>Activity — UC7</div>
+          <div class="diagram-body">
+            <pre class="mermaid">
+flowchart TD
+  A(("●")) --> B["Відкрити сторінку Оцінки"]
+  B --> C{"Фільтр по студенту?"}
+  C -- Ні --> D["GET /api/grades"]
+  C -- Так --> E["GET /api/grades?studentId=X"]
+  D --> F["Всі оцінки з БД"]
+  E --> G["Оцінки одного студента"]
+  F --> H["Відобразити таблицю"]
+  G --> H
+  H --> I(("◉"))
+            </pre>
+          </div>
+        </div>
+
+        <div class="sub-heading">3.8 Додати оцінку (UC8)</div>
+        <div class="diagram-card">
+          <div class="diagram-label"><span class="dot"></span>Activity — UC8</div>
+          <div class="diagram-body">
+            <pre class="mermaid">
+flowchart TD
+  A(("●")) --> B["Відкрити форму"]
+  B --> C["Завантажити список студентів"]
+  C --> D["Обрати студента"]
+  D --> E["Ввести предмет та оцінку"]
+  E --> F{"Поля заповнені?"}
+  F -- Ні --> G["Помилка валідації"]
+  G --> E
+  F -- Так --> H["POST /api/grades"]
+  H --> I["Генерація ID"]
+  I --> J["Збереження в БД"]
+  J --> K["Оновити список"]
+  K --> L(("◉"))
+            </pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. SCENARIOS (COCKBURN) -->
+  <div class="section" id="sec-scenarios">
+    <div class="section-header" onclick="toggle(this)">
+      <button class="section-trigger" aria-expanded="false">
+        <span class="section-icon">📝</span>
+        <span class="section-title">4. Сценарії використання (за Коберном)</span>
+        <span class="section-badge">2 сценарії</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+    <div class="section-body">
+      <div class="section-inner">
+
+        <div class="sub-heading">UC5 — Додати студента</div>
+        <div class="table-wrap">
+          <table class="scenario-table">
+            <tbody>
+              <tr><td>Ім'я</td><td>Додати студента</td></tr>
+              <tr><td>Контекст використання</td><td>Адміністратор додає нового студента до обраної навчальної групи</td></tr>
+              <tr><td>Зона дії</td><td>Веб-додаток «База студентів»</td></tr>
+              <tr><td>Рівень точності</td><td>Користувацька мета</td></tr>
+              <tr><td>Основна дійова особа</td><td>Адміністратор</td></tr>
+              <tr><td>Передумова</td><td>У системі створена хоча б одна група</td></tr>
+              <tr><td>Мінімальні гарантії</td><td>Дані не змінено, якщо валідація не пройшла</td></tr>
+              <tr><td>Гарантії успіху</td><td>Студент збережений у базі даних з expelled&nbsp;=&nbsp;false</td></tr>
+              <tr><td>Тригер</td><td>Адміністратор натискає кнопку «Додати студента»</td></tr>
+              <tr><td>Основний сценарій</td><td>
+                1. Адміністратор відкриває форму додавання<br>
+                2. Система завантажує список груп<br>
+                3. Адміністратор вводить ім'я, прізвище, email<br>
+                4. Адміністратор обирає групу<br>
+                5. Адміністратор натискає «Зберегти»<br>
+                6. Система перевіряє дані<br>
+                7. Система зберігає студента в БД<br>
+                8. Система оновлює список студентів
+              </td></tr>
+              <tr><td>Розширення</td><td>6a. Дані не валідні → показати помилку, повернення до кроку 3</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sub-heading">UC6 — Відрахувати студента</div>
+        <div class="table-wrap">
+          <table class="scenario-table">
+            <tbody>
+              <tr><td>Ім'я</td><td>Відрахувати студента</td></tr>
+              <tr><td>Контекст використання</td><td>Адміністратор відраховує студента зі списку активних</td></tr>
+              <tr><td>Зона дії</td><td>Веб-додаток «База студентів»</td></tr>
+              <tr><td>Рівень точності</td><td>Користувацька мета</td></tr>
+              <tr><td>Основна дійова особа</td><td>Адміністратор</td></tr>
+              <tr><td>Передумова</td><td>Студент існує і не відрахований</td></tr>
+              <tr><td>Мінімальні гарантії</td><td>При скасуванні дані не змінюються</td></tr>
+              <tr><td>Гарантії успіху</td><td>Студент позначений як expelled&nbsp;=&nbsp;true</td></tr>
+              <tr><td>Тригер</td><td>Адміністратор натискає «Відрахувати» біля студента</td></tr>
+              <tr><td>Основний сценарій</td><td>
+                1. Адміністратор обирає студента зі списку<br>
+                2. Адміністратор натискає «Відрахувати»<br>
+                3. Система запитує підтвердження<br>
+                4. Адміністратор підтверджує<br>
+                5. Система надсилає PATCH-запит<br>
+                6. Система встановлює expelled&nbsp;=&nbsp;true<br>
+                7. Система оновлює список студентів
+              </td></tr>
+              <tr><td>Розширення</td><td>
+                4a. Адміністратор скасовує → повернення до списку<br>
+                5a. Студента не знайдено → помилка 404
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BACK TO TOP -->
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0})" title="Вгору">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' }
+  });
+
+  function toggle(header) {
+    const section = header.closest('.section');
+    section.classList.toggle('open');
+    const btn = section.querySelector('.section-trigger');
+    btn.setAttribute('aria-expanded', section.classList.contains('open'));
+  }
+
+  function toggleAll(open) {
+    document.querySelectorAll('.section').forEach(s => {
+      s.classList.toggle('open', open);
+      const btn = s.querySelector('.section-trigger');
+      if (btn) btn.setAttribute('aria-expanded', open);
+    });
+  }
+
+  const backTop = document.getElementById('backTop');
+  window.addEventListener('scroll', () => {
+    backTop.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+</script>
+
+</body>
+</html>
